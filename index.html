@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSINT tudatossági gyakorló</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: nyugodt, olvasós, szerkesztett; mint egy történelmi e-olvasó
+   IDEA: a minta hat csempéje: kezdőlap, választólista, nagy sorszám, fejezetkártya, lejátszósáv, profil
+   PICTURE: korall telt kör, pontrácsos kör és vékony körvonal; nagy vékony számok
+   COLOUR and TYPE: krém alap, korall kiemelés, grafitszürke kártyák; Jost 300-500
+   LAYOUT: krém sáv, benne lekerekített grafit kártyák; bal oldalt lépés, jobb oldalt profil */
+:root{color-scheme:light dark;
+--bg:light-dark(#efe6dc,#262423);--ink:light-dark(#2e2b29,#efe6dc);--mut:light-dark(#6d655e,#b3aaa1);
+--card:light-dark(#4a4746,#3a3736);--cink:#f3ece4;--cmut:#c4bbb2;--line:light-dark(#cbbfb2,#4c4846);--cline:#6a6563;
+--co:#e8604c;--co2:light-dark(#a93a28,#ef7462);--coc:#ffa696;--cod:#c2412d;--paper:light-dark(#f6f0e9,#2f2c2b)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}html{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 Jost,"Futura","Century Gothic",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-weight:400;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5vw,52px);font-weight:300}h2{font-size:clamp(26px,3vw,34px);font-weight:300}h3{font-size:19px;font-weight:500}
+a{color:inherit;text-underline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(5vw,16px)}
+.brand{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:500;padding:18px 0;border-bottom:1px solid var(--line)}
+.brand svg{width:20px;height:14px;stroke:var(--ink);stroke-width:1.5}
+/* hero */
+.hero{position:relative;overflow:hidden;min-height:440px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);align-items:end;gap:24px;padding:32px 0 40px}
+.hero .txt{position:relative;z-index:1;padding-bottom:8px}
+.hero .txt hr{border:0;border-top:1px solid var(--ink);margin:0 0 18px;width:min(100%,420px)}
+.lead{max-width:56ch;color:var(--mut);margin:12px 0 0}
+.rule{margin-top:18px;padding:12px 16px;border-radius:14px;background:var(--paper);max-width:62ch;font-size:15px;border-inline-start:3px solid var(--co)}
+.go{display:inline-flex;align-items:center;gap:14px;margin-top:22px;font-size:15px;text-decoration:none;min-height:44px}
+.go svg{width:46px;height:20px}.golinks{display:flex;flex-wrap:wrap;gap:4px 34px}
+.art{position:relative;height:100%;min-height:340px}
+.art svg{position:absolute;inset:0;width:100%;height:100%}
+/* picker = dark list card */
+.sec-h{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:8px 0 18px}
+.sec-h p{margin:0;color:var(--mut);font-size:14px}
+.picker{background:var(--card);color:var(--cink);border-radius:26px;padding:8px 26px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:40px}
+.pick{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:20px 0;border-bottom:1px solid var(--cline);min-height:44px;box-sizing:border-box}
+.pick b{font-weight:400;font-size:clamp(22px,2.4vw,28px);line-height:1.1}
+.pick .d{grid-column:1;font-size:14px;color:var(--cmut);max-width:46ch}
+.pick .m{grid-column:1;font-size:13px;color:var(--cmut)}
+.pick .a{grid-column:2;grid-row:1/4;align-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13px;color:var(--cmut)}
+.pick .a svg{width:44px;height:20px;stroke:var(--co)}
+.pick[aria-pressed=true] b{color:var(--coc)}
+.pick[aria-pressed=true] .a{color:var(--cink)}
+:focus-visible{outline:2px solid var(--co2)!important;outline-offset:3px}
+.card :focus-visible,.picker :focus-visible,.meter :focus-visible{outline-color:var(--coc)!important}
+/* reader */
+.reader{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:clamp(20px,3vw,40px);align-items:start;padding:44px 0 56px}
+.head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 22px;align-items:end;position:relative}
+.head .lbl{grid-column:1/-1;font-size:13px;color:var(--co2);font-weight:500}
+.num{display:flex;align-items:baseline;gap:14px;font-weight:300;line-height:.9}
+.num #bign{font-size:clamp(72px,9vw,108px);color:var(--ink)}
+.num #ghost{font-size:clamp(34px,4vw,48px);color:var(--co);opacity:.45;letter-spacing:.06em}
+.head h2{padding-bottom:10px}
+#smeta{grid-column:1/-1;margin:2px 0 0;font-size:13px;color:var(--mut)}
+.steps{position:relative;display:flex;flex-wrap:nowrap;gap:6px;margin:20px 0 14px;padding:2px 2px 6px;list-style:none;overflow-x:auto;scrollbar-width:thin}.steps li{flex:none}
+.steps button{all:unset;cursor:pointer;font-size:13px;padding:0 10px;border-radius:99px;border:1px solid var(--line);min-height:34px;box-sizing:border-box;display:inline-flex;align-items:center}
+.steps button[aria-current=step]{background:var(--cod);border-color:var(--cod);color:#fff}
+.steps button.done::before{content:'✓';margin-inline-end:5px;color:var(--co2)}
+.steps button.done{border-color:var(--co2)}
+.card{position:relative;background:var(--card);color:var(--cink);border-radius:26px;padding:clamp(20px,3vw,34px);overflow:hidden}
+.card::after{content:"";position:absolute;right:-60px;top:-60px;width:170px;height:170px;border-radius:50%;border:1px solid var(--cline);pointer-events:none}
+.card h3{font-weight:300;font-size:clamp(26px,3vw,32px);margin-bottom:6px}
+.card p{margin:.6em 0;max-width:68ch}
+.card .small{color:var(--cmut)}
+.why{margin-top:16px;padding:14px 16px;background:rgba(255,255,255,.06);border-radius:14px;font-size:15px;border-inline-start:3px solid var(--co)}
+.why b{color:var(--coc);font-weight:500}
+ul.chk{list-style:none;padding:0;margin:12px 0}
+ul.chk li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--cline)}
+ul.chk input{width:20px;height:20px;margin-top:3px;flex:none;accent-color:var(--co)}
+.tool{display:inline-block;font-size:13px;padding:2px 10px;border-radius:99px;border:1px solid var(--co);margin:4px 6px 0 0;text-decoration:none;color:inherit}
+.tool.g{border-style:dashed}
+textarea{width:100%;min-height:140px;font:16px/1.5 Jost,sans-serif;padding:12px;border-radius:14px;border:1px solid var(--cline);background:rgba(255,255,255,.07);color:var(--cink)}
+.q{margin:10px 0;padding:12px 16px;background:rgba(255,255,255,.06);border-radius:14px}
+.q b{color:var(--coc)}
+details.tn{margin-top:16px;border:1px solid var(--cline);border-radius:14px;padding:10px 16px}
+details.tn summary{cursor:pointer;font-weight:500;min-height:28px}
+button.b{font:500 15px Jost,sans-serif;padding:0 18px;min-height:44px;border-radius:99px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
+.card .nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+/* player bar */
+.player{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;margin:0 0 14px;padding:14px 18px;background:var(--paper);border-radius:99px}
+.pbtn{all:unset;cursor:pointer;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line)}
+.pbtn.p{background:var(--co);border-color:var(--co)}
+.pbtn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.6}
+.pbtn.p svg{stroke:#fff}
+.pbtn:disabled,.pbtn[aria-disabled=true]{opacity:.35;cursor:default}
+.track{position:relative;height:3px;background:var(--line);border-radius:3px}
+.track i{position:absolute;left:0;top:0;bottom:0;background:var(--co);border-radius:3px;transition:width .4s}
+.track b{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--co);transform:translate(-50%,-50%);transition:left .4s}
+.pmeta{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--mut);margin-top:6px;white-space:nowrap}.pmeta #pname{overflow:hidden;text-overflow:ellipsis}
+#cnt{color:var(--co2)}
+/* profile */
+aside{position:sticky;top:16px;display:grid;gap:14px}
+.prof{display:flex;align-items:center;gap:12px}
+.prof .av{width:46px;height:46px;border:1px solid var(--ink);border-radius:8px;display:grid;place-items:center}
+.prof .av svg{width:24px;height:24px;fill:var(--ink)}
+.prof small{display:block;color:var(--co2);font-size:12px}
+.meter{background:var(--card);color:var(--cink);border-radius:26px;padding:22px;position:relative;overflow:hidden}
+.meter h3{font-weight:400;font-size:22px}
+.meter .small{color:var(--cmut);font-size:13px;margin:4px 0 0}
+.bigrow{display:flex;align-items:baseline;gap:12px;margin-top:10px}
+.big{font:300 clamp(64px,8vw,84px)/1 Jost,sans-serif;color:var(--coc)}
+.bigrow span{font-size:28px;font-weight:300;color:var(--cmut);opacity:.5}
+.bar{height:3px;background:var(--cline);border-radius:3px;overflow:hidden;margin:12px 0}
+.bar i{display:block;height:100%;background:var(--co);width:0;transition:width .4s}
+.lvl{font-size:20px;font-weight:300}
+.meter ul{margin:10px 0 0;padding-inline-start:18px;font-size:14px;color:var(--cmut)}
+.note{font-size:13px;color:var(--mut);margin:0}
+.reset{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.reset button.b{font-size:14px;min-height:40px;color:var(--co2)}
+.small{font-size:13px;color:var(--mut)}
+/* PET */
+#pet{contain:paint;background:var(--paper);padding:48px 0 56px;border-top:1px solid var(--line);position:relative;overflow:hidden}
+#pet .orb{position:absolute;right:-120px;top:-120px;width:300px;height:300px;border-radius:50%;background:var(--co);opacity:.9}
+#pet .wrap{position:relative}
+.filt{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.filt button{all:unset;cursor:pointer;font-size:14px;padding:0 16px;min-height:40px;display:inline-flex;align-items:center;border-radius:99px;border:1px solid var(--line);background:var(--bg)}
+.filt button[aria-pressed=true]{background:var(--card);color:var(--cink);border-color:var(--card)}
+.pets{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:14px}
+.pet{background:var(--bg);border:1px solid var(--line);border-radius:22px;padding:20px;display:flex;flex-direction:column}
+.pet h3{font-weight:400;font-size:21px;margin:2px 0 4px}.pet p{margin:.4em 0;font-size:15px}
+.cat{font-size:12px;color:var(--co2);font-weight:500}
+.gp{font-size:14px;background:var(--card);color:var(--cink);border-radius:14px;padding:10px 12px;margin-top:8px}
+.gp b{color:var(--coc);font-weight:500}
+.tags{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}.tags span{font-size:12px;padding:1px 9px;border-radius:99px;border:1px solid var(--line)}
+.pet .more{margin-top:auto;padding-top:10px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;font-size:14px}
+.pet .more svg{width:36px;height:16px;stroke:var(--co)}
+#mobil{padding:52px 0 56px;border-top:1px solid var(--line)}
+.mhead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end}
+.seg{display:inline-flex;padding:4px;border-radius:99px;background:var(--paper);border:1px solid var(--line);margin-top:18px}
+.seg button{all:unset;cursor:pointer;min-height:44px;padding:0 22px;border-radius:99px;font-size:15px;display:inline-flex;align-items:center;gap:8px}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--cink)}
+.seg svg{width:18px;height:18px;fill:currentColor}
+.mcount{text-align:right}.mcount .big{color:var(--co2);line-height:.9}.mcount small{display:block;color:var(--mut);font-size:13px}
+.mlist{list-style:none;margin:20px 0 0;padding:8px clamp(18px,3vw,30px);background:var(--card);color:var(--cink);border-radius:26px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:40px}
+.mlist li{display:flex;gap:12px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--cline)}
+.mlist input{width:20px;height:20px;margin-top:4px;flex:none;accent-color:var(--co)}
+.mlist b{font-weight:500;font-size:17px}
+.mlist .path{display:block;font-size:13px;color:var(--coc);margin:3px 0}
+.mlist .w{display:block;font-size:14px;color:var(--cmut)}
+.mlist .lv{font-size:11px;border:1px solid var(--cline);border-radius:99px;padding:0 7px;margin-inline-start:6px;color:var(--cmut);vertical-align:2px}
+.mnote{font-size:13px;color:var(--mut);margin-top:12px;max-width:80ch}
+@media(max-width:900px){.mlist{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.mhead{grid-template-columns:minmax(0,1fr)}.mcount{text-align:left}}
+footer{border-top:1px solid var(--line);font-size:14px;color:var(--mut);padding:24px 0 36px}
+.arrow{fill:none;stroke-width:1.6}
+@media(max-width:900px){.reader{grid-template-columns:minmax(0,1fr)}aside{position:static;grid-template-columns:minmax(0,1fr)}.picker{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){.head{grid-template-columns:minmax(0,1fr)}.head h2{padding-bottom:0}.hero{grid-template-columns:minmax(0,1fr);min-height:0;padding-top:0}.art{min-height:220px;order:-1}.picker{padding:4px 18px}}
+@media(prefers-reduced-motion:reduce){.bar i,.track i,.track b{transition:none}}
+</style>
+</head>
+<body>
+<header class="wrap">
+<div class="brand"><span>OSINT.gyakorló</span><svg viewBox="0 0 20 14" aria-hidden="true"><path d="M0 1h20M6 7h14M0 13h20"/></svg></div>
+<div class="hero">
+<div class="txt">
+<hr>
+<h1>Mit tud rólad egy idegen?</h1>
+<p class="lead">Válassz egy helyzetet, és lépésről lépésre végigvezetünk egy nyílt forrású felderítésen, amelyet önmagadról végzel. A végén látod, mennyire vagy kitett, és mit tehetsz ellene.</p>
+<p class="rule"><b>Alapszabály:</b> kizárólag a saját adataiddal vagy az oktató által megadott fiktív személlyel dolgozz. Más ember adatainak engedély nélküli gyűjtése sértheti a GDPR-t és a magánszférát.</p>
+<div class="golinks"><a class="go" href="#valaszto">Válassz helyzetet <svg viewBox="0 0 46 20" class="arrow" stroke="currentColor"><path d="M0 10h44M35 2l9 8-9 8"/></svg></a><a class="go" href="#mobil">Telefonod beállításai <svg viewBox="0 0 46 20" class="arrow" stroke="currentColor"><path d="M0 10h44M35 2l9 8-9 8"/></svg></a></div>
+</div>
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 400 360" preserveAspectRatio="xMidYMid slice">
+<defs><pattern id="dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.7" fill="currentColor"/></pattern>
+<pattern id="lines" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)"><path d="M0 3h6" stroke="currentColor" stroke-width="1.6"/></pattern></defs>
+<g style="color:var(--ink)">
+<circle cx="300" cy="90" r="110" fill="var(--co)"/>
+<circle cx="200" cy="150" r="70" fill="url(#lines)"/>
+<circle cx="270" cy="250" r="62" fill="url(#dots)"/>
+<circle cx="160" cy="210" r="120" fill="none" stroke="var(--co)" stroke-width="1.2"/>
+<circle cx="90" cy="320" r="70" fill="var(--co)"/>
+</g></svg>
+</div>
+</div>
+</header>
+
+<section class="wrap" id="valaszto" style="padding-top:8px">
+<div class="sec-h"><h2>Válaszd ki a helyzetet</h2><p>4 forgatókönyv · 8 lépés mindegyikben</p></div>
+<div class="picker" id="picker" role="group" aria-label="Forgatókönyv választása"></div>
+</section>
+
+<div class="wrap"><div class="reader">
+<section aria-live="polite">
+<div class="head">
+<div class="lbl">Lépés</div>
+<div class="num"><span id="bign">01</span><span id="ghost" aria-hidden="true"></span></div>
+<h2 id="stitle"></h2>
+<p id="smeta"></p>
+</div>
+<ol class="steps" id="steps" aria-label="Lépések"></ol>
+<div class="player">
+<button class="pbtn" id="prev" aria-label="Előző lépés"><svg viewBox="0 0 20 20"><path d="M13 4l-7 6 7 6"/></svg></button>
+<div><div class="track"><i id="prog"></i><b id="knob"></b></div><div class="pmeta"><span id="cnt"></span><span id="pname"></span></div></div>
+<button class="pbtn p" id="next" aria-label="Következő lépés"><svg viewBox="0 0 20 20"><path d="M7 4l7 6-7 6"/></svg></button>
+</div>
+<div class="card" id="card"></div>
+</section>
+<aside>
+<div class="prof"><div class="av" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.5"/><path d="M3 22c0-5 4-8 9-8s9 3 9 8z"/></svg></div><div>Te magad<small>Önellenőrzés, nem nyomozás</small></div></div>
+<div class="meter">
+<h3>Kitettséged</h3>
+<p class="small">Az Elemzés lépésben bejelölt találatok alapján.</p>
+<div class="bigrow"><div class="big" id="pct">0%</div></div>
+<div class="bar"><i id="fill"></i></div>
+<div class="lvl" id="lvl">Még nincs bejelölt találat</div>
+<ul id="found"></ul>
+</div>
+<p class="note">A haladásod és a jegyzeteid csak ebben a böngészőben tárolódnak. Közös gépen a végén töröld őket.</p>
+<div class="reset"><button class="b" id="reset">Haladás és jegyzetek törlése</button><span id="rconf" hidden><span class="note">Biztosan? Ez a forgatókönyvek összes pipáját és jegyzetét törli.</span> <button class="b" id="ryes">Igen, törlöm</button> <button class="b" id="rno">Mégse</button></span></div>
+</aside>
+</div></div>
+
+<section id="mobil"><div class="wrap">
+<div class="mhead"><div>
+<h2>Telefonod adatvédelmi beállításai</h2>
+<p class="lead">A legtöbb adat ma a telefonról szivárog: helyadat a fotókban, követés az alkalmazásokban, értesítések a zárolt képernyőn. Válaszd ki a rendszered, és pipáld ki, amit már beállítottál.</p>
+<div class="seg" id="os" role="group" aria-label="Operációs rendszer választása">
+<button data-os="ios" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C7 7.3 5.6 8.2 4.8 9.6c-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 2.9 2.4 1.2-.1 1.6-.8 3-.8s1.8.8 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.6-1-2.6-3.9zM14.1 5.5c.6-.8 1.1-1.8 1-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2-.5 2.7-1.3z"/></svg>iOS (iPhone)</button>
+<button data-os="android" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9h10v8a1 1 0 0 1-1 1h-1v3h-2v-3h-2v3H9v-3H8a1 1 0 0 1-1-1zM4.5 9A1.5 1.5 0 0 1 6 10.5v5a1.5 1.5 0 0 1-3 0v-5A1.5 1.5 0 0 1 4.5 9zm15 0a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-3 0v-5A1.5 1.5 0 0 1 19.5 9zM7 8a5 5 0 0 1 10 0z"/></svg>Android</button>
+</div></div>
+<div class="mcount"><div class="big" id="mdone">0</div><small id="mof">/ 0 beállítás kész</small></div>
+</div>
+<ul class="mlist" id="mlist"></ul>
+<p class="mnote" id="mnote"></p>
+</div></section>
+
+<section id="pet"><div class="orb" aria-hidden="true"></div><div class="wrap">
+<h2>PET-gyűjtemény: adatvédelmet erősítő technológiák és jó gyakorlatok</h2>
+<p class="lead">A Privacy Enhancing Technologies (PET) olyan eszközök és módszerek, amelyek csökkentik, mennyi adat keletkezik rólad, és ki férhet hozzá. Szűrj forgatókönyv szerint.</p>
+<div class="filt" id="filt" role="group" aria-label="Szűrés forgatókönyv szerint"></div>
+<div class="pets" id="pets"></div>
+<h3 style="margin-top:26px">Átfogó útmutatók a további tanuláshoz</h3>
+<p><a class="tool" href="https://www.privacyguides.org/">Privacy Guides</a><a class="tool" href="https://ssd.eff.org/">Surveillance Self-Defense (EFF)</a><a class="tool" href="https://securityplanner.consumerreports.org/">Security Planner</a><a class="tool" href="https://securityinabox.org/en/">Security in a Box</a></p>
+<p class="small" style="margin-top:14px">Az eszközök példák, nem ajánlás egyetlen gyártó mellett sem. Használat előtt nézd meg a szolgáltató adatkezelési tájékoztatóját.</p>
+</div></section>
+
+<footer><div class="wrap">
+Eszközforrások: osint4all (start.me), OSINT Framework, revealer.us, breachdirectory.org, fingerprint.to. Gyakorláshoz: <a href="https://pwn.college/">pwn.college</a>. A szaggatott keretű eszközök az osint4all (start.me) és az OSINT Framework gyűjteményeiből válogatott, védekezési célú eszközök; 2026. novemberi állapot. Másik nézet: <a href="server.html">„Server” design változat</a>.
+</div></footer>
+
+<script>
+{
+const T=(n,u,g)=>`<a class="tool${g?' g':''}" href="${u}">${n}</a>`;
+const PHASES=['Helyzet és cél','Keret','1. Tervezés','2. Gyűjtés','3. Elemzés','4. Jelentés','Védekezés','Ellenőrzés'];
+const PET=[
+{n:'Jelszókezelő',c:'Hitelesítés',u:'https://bitwarden.com/',ex:'Bitwarden (nyílt forráskódú), KeePassXC (helyi tárolás)',w:'Minden fiókhoz egyedi, hosszú jelszót generál és tárol, így egy szivárgás nem érinti a többi fiókot.',g:'Egyetlen erős fő jelszó és kétlépcsős védelem a jelszókezelőn.',f:['f2']},
+{n:'Passkey és FIDO2 hardverkulcs',c:'Hitelesítés',u:'https://fidoalliance.org/passkeys/',ex:'Passkey a telefonon, hardveres biztonsági kulcs',w:'Nyilvános kulcsú hitelesítés, amely a valódi domainhez kötött, ezért adathalász oldalon nem működik.',g:'Először a fő e-mail fiókon és a bankon kapcsold be.',f:['f2','f3']},
+{n:'E-mail alias szolgáltatás',c:'Adattakarékosság',u:'https://simplelogin.io/',ex:'SimpleLogin, AnonAddy, Firefox Relay, Apple „E-mail-cím elrejtése”',w:'Minden regisztrációhoz külön továbbító címet ad, így a fiókjaid nem köthetők össze egy közös e-mail címen keresztül.',g:'Webshopokhoz és hírlevelekhez mindig aliast használj; szivárgás után az alias egyszerűen törölhető.',f:['f1','f2']},
+{n:'Szivárgásfigyelés k-anonimitással',c:'Monitorozás',u:'https://haveibeenpwned.com/',ex:'Have I Been Pwned értesítés, Pwned Passwords',w:'A jelszóellenőrzés csak a hash első 5 karakterét küldi el, így a szolgáltató nem tudja meg a jelszót (k-anonimitás).',g:'Iratkozz fel értesítésre a saját címeidre. Jó tananyag a k-anonimitás gyakorlati bemutatására.',f:['f2']},
+{n:'Nyomkövetés-blokkolás a böngészőben',c:'Böngészés',u:'https://ublockorigin.com/',ex:'Firefox fokozott követésvédelem, uBlock Origin, Brave',w:'Blokkolja a harmadik féltől származó követőket és sütiket, amelyek oldalakon átívelő profilt építenek rólad.',g:'Külön böngészőprofil a munkához és a magánélethez.',f:['f1']},
+{n:'Adatvédelmet tiszteletben tartó kereső',c:'Böngészés',u:'https://duckduckgo.com/',ex:'DuckDuckGo, Startpage',w:'Nem épít keresési előzményekből személyes profilt.',g:'Állítsd be alapértelmezett keresőnek.',f:['f1']},
+{n:'Védő DNS-szűrés',c:'Hálózat',u:'https://quad9.net/',ex:'Quad9, NextDNS',w:'Ismert kártékony és adathalász domainekre nem old fel, így egy véletlen kattintás is kevésbé veszélyes.',g:'Állítsd be a routeren, hogy minden otthoni eszköz védett legyen.',f:['f3']},
+{n:'E-mail hitelesítés (SPF, DKIM, DMARC)',c:'Szervezeti',u:'https://dmarc.org/',ex:'DMARC „reject” szabályzat a saját domainen',w:'Megakadályozza, hogy mások a szervezet nevében hamisított levelet küldjenek.',g:'Szervezeti gyakorlat: monitorozó módból fokozatosan átállni elutasító szabályzatra.',f:['f3']},
+{n:'Metaadat-eltávolítás',c:'Adattakarékosság',u:'https://exiftool.org/',ex:'ExifTool, mat2, Image Scrubber, a telefon megosztási beállításai',w:'Eltávolítja a fotókból a GPS-koordinátát, a készülék típusát és az időbélyeget.',g:'Kapcsold ki a helymentést a kamerában, és megosztás előtt töröld a metaadatot.',f:['f4']},
+{n:'Végpontok közötti titkosítású üzenetküldő',c:'Kommunikáció',u:'https://signal.org/',ex:'Signal, Element, Briar',w:'Az üzenetek tartalmát csak a résztvevők látják, és kevés metaadatot tárol.',g:'Személyes fotókat és helyadatot ilyen csatornán ossz meg, ne nyilvános posztban.',f:['f4']},
+{n:'Anonimizáló böngésző',c:'Hálózat',u:'https://www.torproject.org/',ex:'Tor Browser',w:'Több átjátszón keresztül elrejti az IP-címedet a meglátogatott oldal elől.',g:'Tudd, mire jó és mire nem: a bejelentkezés egy fiókba azonnal azonosít.',f:['f1']},
+{n:'Törlési jog és találat-eltávolítás',c:'Jogi eszköz',u:'https://support.google.com/websearch/answer/12719076',ex:'GDPR 17. cikk szerinti törlési kérelem, Google „Rólad szóló találatok”',w:'Jogi úton kérheted a személyes adataid törlését adatkezelőktől és keresőtalálatokból.',g:'Rögzítsd, mikor és kinek küldtél kérelmet; az adatkezelőnek főszabályként egy hónapja van válaszolni.',f:['f1','f4']},
+{n:'Pszeudonimizáció és adattakarékosság',c:'Elv',u:'https://gdpr-info.eu/art-25-gdpr/',ex:'Álnév, eltérő felhasználónevek, csak a szükséges adat megadása',w:'A GDPR 25. cikke szerinti beépített és alapértelmezett adatvédelem egyéni szinten is alkalmazható.',g:'Regisztrációnál csak a kötelező mezőket töltsd ki.',f:['f1','f4']},
+{n:'Nem használt fiókok megszüntetése',c:'Adattakarékosság',u:'https://backgroundchecks.org/justdeleteme/',ex:'Just Delete Me fióktörlési linkgyűjtemény',w:'Egy elfelejtett fiók is szivároghat; ami nem létezik, az nem kerülhet adatbázisba.',g:'Évente egyszer nézd át a fiókjaidat, és töröld, amit nem használsz.',f:['f1','f2','f4']},
+{n:'Böngésző-ujjlenyomat önteszt',c:'Böngészés',u:'https://coveryourtracks.eff.org/',ex:'Cover Your Tracks (EFF), BrowserLeaks, IPLeak',w:'Megmutatja, mennyire egyedi a böngésződ, és szivárog-e a valódi IP-címed (például WebRTC-n vagy DNS-en keresztül).',g:'Védelmi beállítás vagy VPN bekapcsolása után futtasd újra, és hasonlítsd össze az eredményt.',f:['f1']},
+{n:'Biztonságos linkellenőrzés',c:'Működési gyakorlat',u:'https://urlscan.io/',ex:'urlscan.io „Private” móddal, a bank címének kézi beírása',w:'A link ellenőrzése úgy, hogy közben nem adsz ki személyes adatot.',g:'Személyes azonosítót tartalmazó linket ne küldj be nyilvános elemzőbe.',f:['f3']}
+];
+const TN={
+f1:{t:'45 perc egyéni munka, 15 perc csoportos megbeszélés.',e:'Teljes-e a szelektorlista; reális-e a kockázati besorolás; van-e konkrét, végrehajtott védekezési lépés.',d:'Hol a határ a nyilvános adat és a magánszféra között, ha minden adat egyenként nyilvános?',s:'Érzékeny eredményeket a hallgató ne mutasson meg a csoportnak; a megbeszélés a módszerről szóljon.'},
+f2:{t:'30 perc egyéni munka, 10 perc megbeszélés.',e:'Felismeri-e a jelszó-újrahasznosítás láncreakcióját; van-e cselekvési terve.',d:'Etikus-e szivárgott adatbázisokat kutatási célra felhasználni?',s:'A hallgatók ne írjanak be jelszót semmilyen ellenőrző oldalon; elég az e-mail cím.'},
+f3:{t:'40 perc, lehetőleg az oktató által előre készített mintalevéllel.',e:'Hány jelet azonosít; ellenőriz-e kattintás nélkül; tudja-e, hova kell jelenteni.',d:'Mennyit segít a támadónak a nyilvános lábnyom egy célzott adathalász levél megírásában?',s:'Valódi gyanús levél esetén a link ne kerüljön nyilvános elemzőbe személyes azonosítóval.'},
+f4:{t:'30 perc egyéni munka, 10 perc megbeszélés.',e:'Kívülről nézte-e meg a profilját; ellenőrizte-e a metaadatokat; változtatott-e beállításon.',d:'Hogyan változtatja meg a valós idejű megosztás a fizikai biztonságot?',s:'Gyermekekről készült képeket ne használjanak gyakorlóanyagként.'}
+};
+const S=[
+{id:'f1',t:'Saját digitális lábnyom',lv:'Kezdő',min:45,short:'Mit talál rólad egy HR-es fél óra alatt?',
+sit:'Állásinterjú előtt állsz, és kíváncsi vagy, mit talál rólad a HR-es fél óra keresgélés után.',
+goal:'Belátni, hogy az egyenként ártalmatlan adatok együtt részletes képet adnak rólad.',
+frame:'Csak a saját neveiddel, felhasználóneveiddel és képeiddel dolgozz. Ne jelentkezz be más fiókjába, és ne lépj kapcsolatba senkivel.',
+plan:['Írd össze a teljes neved és beceneveid.','Írd össze az összes felhasználóneved és e-mail címed.','Döntsd el, mit akarsz megtudni: kiderül-e a lakóhelyed, munkahelyed, napirended?'],
+plan_why:'A felderítés mindig kiinduló adatokból (szelektorokból) indul. Minél több szelektorod van, annál több találat köthető össze.',
+col:[['Keress rá a felhasználónevedre több száz oldalon.',T('revealer.us','https://revealer.us/')+T('fingerprint.to','https://fingerprint.to/')+T('WhatsMyName','https://whatsmyname.app/',1)+T('Namechk','https://namechk.com/',1)],
+['Keress rá a teljes nevedre idézőjelek között egy keresőben.',T('Google','https://www.google.com/',1)],
+['Végezz fordított képkeresést a saját profilképeddel.',T('Google Lens','https://search.google/ways-to-search/lens/',1)+T('TinEye','https://tineye.com/',1)],
+['Nézd meg a régi weboldalaid archív változatát.',T('Wayback Machine','https://web.archive.org/',1)],
+['Teszteld, mit árul el rólad a saját böngésződ (ujjlenyomat, IP-cím, bejelentkezett közösségi fiókok).',T('Cover Your Tracks (EFF)','https://coveryourtracks.eff.org/',1)+T('BrowserLeaks','https://browserleaks.com/',1)+T('IPLeak','https://ipleak.net/',1)+T('Social Media Fingerprint','https://robinlinus.github.io/socialmedia-leak/',1)]],
+col_why:'Az ugyanazon a néven futó fiókok összekapcsolhatók. Egy profilkép újrahasználata egyetlen kereséssel elárulja a többi fiókodat.',
+find:['Lakóhely (város vagy kerület)','Munkahely vagy iskola','Napirend, rendszeres helyszínek','Családtagok, közeli ismerősök','Születési dátum','Biztonsági kérdésre adható válasz (pl. háziállat neve)','Több fiók ugyanazzal a felhasználónévvel','Régi, elfelejtett fiók'],
+rep:'Táblázatban rögzítsd: adat, hol található, ki látja, mennyire kockázatos (alacsony, közepes, magas).',
+def:['Szigorítsd az adatvédelmi beállításaidat minden fiókban.','Töröld a régi, nem használt fiókjaidat.','Használj eltérő felhasználónevet a magán- és a szakmai fiókjaidhoz.','Ne használd ugyanazt a profilképet mindenhol.','Kérd a Google „Rólad szóló találatok” funkciójával a személyes adataid eltávolítását.'],
+q:['Mi lepett meg a legjobban?','Melyik adatot törölnéd elsőként, és miért?','Miért kockázatos mindenhol ugyanazt a felhasználónevet használni?']},
+{id:'f2',t:'Érintett vagyok‑e adatszivárgásban?',lv:'Kezdő',min:30,short:'Egy régi szivárgás ma is veszélyes lehet.',
+sit:'Hírt olvasol egy webáruház adatszivárgásáról, ahol neked is volt fiókod.',
+goal:'Megérteni, hogyan veszélyeztet egyetlen szivárgás több fiókot is, ha ugyanazt a jelszót használod.',
+frame:'Csak a saját e-mail címeiddel ellenőrizz. Más címét ne nézd meg az engedélye nélkül.',
+plan:['Írd össze az összes e-mail címedet, a régieket is.','Gondold végig, hol használsz azonos vagy hasonló jelszót.'],
+plan_why:'A régi, elfelejtett címek a legveszélyesebbek, mert azokhoz tartozó fiókokat már nem figyelsz.',
+col:[['Ellenőrizd, szerepel-e az e-mail címed ismert szivárgásban.',T('breachdirectory.org','https://breachdirectory.org/')+T('Have I Been Pwned','https://haveibeenpwned.com/',1)],
+['Nézd meg, milyen szivárgásokban és milyen adatmezőkkel szerepelsz (jelszót nem mutat).',T('revealer.us','https://revealer.us/')]],
+col_why:'A szivárgott adatbázisokat a támadók évekig használják. A szivárgás dátuma megmutatja, mely jelszavaid lehetnek érintettek.',
+find:['Szerepel legalább egy szivárgásban','Jelszó (vagy jelszó-hash) is kiszivárgott','Telefonszám kiszivárgott','Lakcím kiszivárgott','Az érintett jelszót máshol is használom','Nincs kétlépcsős azonosítás a fő e-mail fiókomon'],
+rep:'Rögzítsd: szivárgás neve, dátuma, érintett adatok, és milyen lépést tettél.',
+def:['Használj jelszókezelőt, és minden oldalon egyedi jelszót.','Változtasd meg az érintett jelszót mindenhol, ahol használtad.','Kapcsold be a kétlépcsős azonosítást, lehetőleg passkey-vel vagy hardverkulccsal.','Regisztrációhoz használj e-mail aliast.'],
+q:['Miért nem elég egy bonyolult jelszó, ha mindenhol ugyanaz?','Mit teszel elsőként, ha érintett vagy?']},
+{id:'f3',t:'Adathalász üzenet felismerése',lv:'Középhaladó',min:40,short:'Valódi a bank levele, vagy csapda?',
+sit:'E-mailt kapsz, amely a bankod nevében sürgős jelszócserét kér egy linken keresztül.',
+goal:'Megtanulni nyilvános forrásokból ellenőrizni egy üzenetet és egy linket, mielőtt rákattintasz.',
+frame:'Csak a saját postafiókodba érkezett gyanús üzenettel dolgozz, és a linkre ne kattints.',
+plan:['Döntsd el, mit ellenőrzöl: feladó, link célja, domain kora, hangnem.','A linket csak másold ki, ne nyisd meg.'],
+plan_why:'A legtöbb adathalász üzenet néhány gyors ellenőrzéssel lebuktatható, de csak akkor, ha előbb ellenőrzöl és csak utána kattintasz.',
+col:[['Nézd meg a feladó valódi címét és a levél fejlécét (SPF, DKIM, DMARC eredmény). A fejlécet bemásolhatod egy elemzőbe; előtte töröld belőle a saját e-mail címedet.',T('MXToolbox Email Header Analyzer','https://mxtoolbox.com/EmailHeaders.aspx',1)],
+['Ellenőrizd a kimásolt linket kattintás nélkül. Figyelem: a VirusTotal a beküldött linket megosztja a biztonsági közösséggel, az urlscan.io-n pedig a vizsgálat alapból nyilvános is lehet. Válaszd a „Private” láthatóságot, és ne küldj be olyan linket, amely személyes azonosítót vagy jelszó-visszaállító kódot tartalmaz.',T('VirusTotal','https://www.virustotal.com/',1)+T('urlscan.io','https://urlscan.io/',1)+T('PhishTank','https://www.phishtank.com/',1)],
+['Nézd meg, mikor regisztrálták a domaint.',T('WHOIS (ICANN Lookup)','https://lookup.icann.org/',1)+T('Who.is','https://who.is/',1)]],
+col_why:'Az ellenőrző oldalakra beküldött adat sem tűnik el: korábban nyilvános urlscan-vizsgálatokból jelszó-visszaállító linkek szivárogtak ki. Egy néhány napos domain vagy a fejlécben elbukott DMARC ellenőrzés erős jele a hamisításnak.',
+find:['A feladó domainje eltér a bank valódi domainjétől','Betűcsere a domainben (pl. „rn” az „m” helyett)','A domain friss, pár napos vagy hetes','Sürgető, fenyegető hangnem','A levél a nevemen szólít, és nyilvános adatot használ rólam','Az SPF, DKIM vagy DMARC ellenőrzés elbukott'],
+rep:'Rögzítsd a talált jeleket, a döntésedet (adathalász vagy valódi), és jelentsd a banknak vagy a CERT-nek.',
+def:['Soha ne a levélben lévő linken lépj be: a bank címét írd be magad.','Jelentsd a gyanús leveleket a levelezőrendszerben és a banknál.','Csökkentsd a nyilvános lábnyomodat (lásd az első forgatókönyvet), mert abból írnak rád szabott üzenetet.'],
+q:['Melyik három jel árulja el leggyorsabban az adathalászatot?','Hogyan segíti a támadót a nyilvános lábnyomod?']},
+{id:'f4',t:'Közösségi média átvilágítás',lv:'Kezdő',min:30,short:'Mit árulnak el a nyaralós képeid?',
+sit:'Nyaralásról posztolsz képeket, és szeretnéd tudni, mit lát belőlük egy idegen.',
+goal:'Megérteni, mennyit elárulnak a fotók, a helymegjelölések és az ismerőslista.',
+frame:'Csak a saját profiljaidat és fotóidat vizsgáld.',
+plan:['Listázd a közösségimédia-fiókjaidat.','Válassz ki néhány saját fotót, amelyet megosztottál.'],
+plan_why:'Az idegen azt látja, ami kijelentkezve is látszik. Ezért kívülről kell megnézni a saját profilodat.',
+col:[['Nézd meg a profilodat kijelentkezve, vagy a „megtekintés másként” nézetben.',''],
+['Ellenőrizd a saját fotóid metaadatait (helyadat, készülék). Az ExifTool letölthető parancssori program, így a képeid nem kerülnek fel idegen szerverre.',T('ExifTool','https://exiftool.org/',1)+T('Image Scrubber (böngészőben fut)','https://everestpipkin.github.io/image-scrubber/',1)],
+['Nézd át, kik látják az ismerőslistádat, a születésnapodat és a munkahelyedet.','']],
+col_why:'A fotók gyakran GPS-koordinátát tartalmaznak, a valós idejű posztok pedig elárulják, mikor nem vagy otthon.',
+find:['Lakcím vagy utca beazonosítható a képekből','Helyadat van a fotók metaadataiban','Valós időben posztolok a tartózkodási helyemről','Az ismerőslistám nyilvános','A születési dátumom nyilvános','A gyerekeim vagy családtagjaim képe nyilvános'],
+rep:'Rögzítsd: beállítás, régi érték, új érték.',
+def:['Kapcsold ki a helymeghatározást a kamera alkalmazásban.','Nyaralásról utólag posztolj.','Rejtsd el az ismerőslistát és a személyes adataidat.','Évente egyszer nézd át az adatvédelmi beállításaidat.'],
+q:['Melyik beállításod volt a legnyitottabb?','Miért veszélyes valós időben posztolni a tartózkodási helyedet?']}
+];
+
+const MOB={
+ios:{note:'iOS 17–18 alapján. A menüpontok neve verziótól és nyelvtől függően kissé eltérhet; ha nem találod, használd a Beállítások keresőjét.',items:[
+{t:'Alkalmazások követésének tiltása',p:'Beállítások › Adatvédelem és biztonság › Követés',w:'Kapcsold ki a követéskérések engedélyezését, így az alkalmazások nem követhetnek más cégek alkalmazásaiban és webhelyein.',l:'Alap',f:['f1']},
+{t:'Helymeghatározás alkalmazásonként',p:'Beállítások › Adatvédelem és biztonság › Helymeghatározás',w:'Csak „Az app használata közben” engedélyezz, és ahol nem kell, kapcsold ki a „Pontos hely” opciót.',l:'Alap',f:['f1','f4']},
+{t:'Helyadat a fotókban',p:'Helymeghatározás › Kamera › Soha; megosztáskor: Megosztás › Beállítások › Hely kikapcsolása',w:'A fotóid így nem tartalmaznak GPS-koordinátát, vagy legalább megosztáskor lekerül róluk.',l:'Alap',f:['f4']},
+{t:'Korlátozott hozzáférés a fotókhoz',p:'Beállítások › Adatvédelem és biztonság › Fotók',w:'Az alkalmazásoknak csak a kiválasztott képeket add oda, ne a teljes könyvtárat.',l:'Alap',f:['f4']},
+{t:'Biztonsági ellenőrzés',p:'Beállítások › Adatvédelem és biztonság › Biztonsági ellenőrzés',w:'Egy helyen látod és vonhatod vissza, kivel osztod meg a helyed és melyik alkalmazásnak mihez van hozzáférése.',l:'Alap',f:['f1','f4']},
+{t:'App adatvédelmi jelentés',p:'Beállítások › Adatvédelem és biztonság › App adatvédelmi jelentés',w:'Megmutatja, melyik alkalmazás mikor használta a kamerát, mikrofont, helyet, és milyen domainekre kapcsolódott.',l:'Haladó',f:['f1']},
+{t:'Értesítések előnézete zárolt képernyőn',p:'Beállítások › Értesítések › Előnézetek mutatása › Feloldáskor',w:'A zárolt képernyőn nem olvasható ki egyszer használatos kód vagy üzenet tartalma.',l:'Alap',f:['f2','f3']},
+{t:'Lopott eszköz védelme',p:'Beállítások › Face ID és jelkód › Lopott eszköz védelme',w:'Ismeretlen helyen a kritikus műveletekhez (pl. Apple ID jelszó módosítása) biometrikus azonosítás és várakozás kell.',l:'Alap',f:['f2']},
+{t:'Mail-tevékenység védelme',p:'Beállítások › Mail › Adatvédelem',w:'Elrejti az IP-címedet a levelekbe rejtett követőpixelek elől, így a feladó nem látja, mikor és honnan nyitottad meg a levelet.',l:'Alap',f:['f3']},
+{t:'Safari: webhelyek közötti követés tiltása',p:'Beállítások › Safari › Adatvédelem és biztonság',w:'Kapcsold be a webhelyek közötti követés megakadályozását és a csalárd webhelyre figyelmeztetést.',l:'Alap',f:['f1','f3']},
+{t:'Személyre szabott Apple hirdetések',p:'Beállítások › Adatvédelem és biztonság › Apple hirdetések',w:'Kapcsold ki, hogy a használatodból ne készüljön hirdetési profil.',l:'Alap',f:['f1']},
+{t:'Zárolás mód',p:'Beállítások › Adatvédelem és biztonság › Zárolás mód',w:'Rendkívüli védelem célzott kémprogramok ellen (pl. újságíróknak, aktivistáknak). Sok funkciót korlátoz, ezért csak magas kockázatnál ajánlott.',l:'Haladó',f:['f3']}]},
+android:{note:'Android 14–15 (Pixel) alapján. Samsung, Xiaomi és más gyártók menüi eltérhetnek; ha nem találod, használd a Beállítások keresőjét.',items:[
+{t:'Adatvédelmi irányítópult',p:'Beállítások › Biztonság és adatvédelem › Adatvédelem › Adatvédelmi irányítópult',w:'Idővonalon mutatja, melyik alkalmazás mikor használta a helyet, a kamerát és a mikrofont az elmúlt napokban.',l:'Alap',f:['f1']},
+{t:'Engedélykezelő: helyadat',p:'Beállítások › Biztonság és adatvédelem › Adatvédelem › Engedélykezelő › Hely',w:'Csak „Csak az alkalmazás használata közben” engedélyezz, és ahol nem kell, kapcsold ki a „Pontos hely használata” opciót.',l:'Alap',f:['f1','f4']},
+{t:'Helyadat a fotókban',p:'Kamera alkalmazás › Beállítások › Hely mentése ki',w:'A fotóid nem tartalmaznak GPS-koordinátát. Google Fotók linkes megosztásakor is elrejthető a hely.',l:'Alap',f:['f4']},
+{t:'Kamera és mikrofon hozzáférés kapcsolója',p:'Gyorsbeállítások panel › Kamera-hozzáférés, Mikrofon-hozzáférés',w:'Egy mozdulattal minden alkalmazás elől letilthatod; a használatot zöld jelzés mutatja a sarokban.',l:'Alap',f:['f1']},
+{t:'Fel nem használt alkalmazások engedélyei',p:'Beállítások › Alkalmazások › (alkalmazás) › Az alkalmazástevékenység szüneteltetése, ha nincs használatban',w:'A rég nem használt alkalmazások engedélyeit a rendszer automatikusan visszavonja.',l:'Alap',f:['f1']},
+{t:'Hirdetésazonosító törlése',p:'Beállítások › Biztonság és adatvédelem › Adatvédelem › Hirdetések › Hirdetésazonosító törlése',w:'Az alkalmazások nem tudnak hirdetési azonosító alapján profilt építeni rólad.',l:'Alap',f:['f1']},
+{t:'Google-fiók tevékenységek',p:'myaccount.google.com › Adatok és adatvédelem',w:'Állítsd be a webes és alkalmazástevékenység és a helyelőzmények (Idővonal) automatikus törlését, vagy kapcsold ki őket.',l:'Alap',f:['f1','f4']},
+{t:'Értesítések a zárolt képernyőn',p:'Beállítások › Értesítések › Értesítések a lezárási képernyőn › Érzékeny tartalom elrejtése',w:'A zárolt képernyőn nem olvasható ki egyszer használatos kód vagy üzenet tartalma.',l:'Alap',f:['f2','f3']},
+{t:'Privát DNS',p:'Beállítások › Hálózat és internet › Privát DNS › Privát DNS-szolgáltató gazdagépneve',w:'Titkosított DNS; például a dns.quad9.net az ismert kártékony és adathalász domaineket is blokkolja.',l:'Haladó',f:['f3']},
+{t:'Wi-Fi és Bluetooth keresés',p:'Beállítások › Hely › Helyszolgáltatások › Wi-Fi-keresés, Bluetooth-keresés',w:'Kikapcsolva a telefon nem keres folyamatosan hálózatokat a helymeghatározáshoz, akkor sem, ha a Wi-Fi ki van kapcsolva.',l:'Haladó',f:['f1']},
+{t:'Play Protect és ismeretlen források',p:'Play Áruház › Profil › Play Protect; Beállítások › Alkalmazások › Speciális hozzáférés › Ismeretlen alkalmazások telepítése',w:'Tartsd bekapcsolva a Play Protectet, és ne engedélyezd a telepítést ismeretlen forrásból (pl. SMS-ben kapott linkről).',l:'Alap',f:['f3']},
+{t:'Lopásvédelem',p:'Beállítások › Google › Összes szolgáltatás › Lopásvédelem',w:'A telefon automatikusan zárol, ha valaki kikapja a kezedből, és a kritikus beállítások módosítása extra azonosítást kér.',l:'Alap',f:['f2']}]}};
+window.APP={S,PET,TN,MOB};
+const $=id=>document.getElementById(id);
+let st={};try{st=JSON.parse(localStorage.getItem('osint-st')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('osint-st',JSON.stringify(st))}catch(e){}};
+let cur=S[0],step=0;
+const ss=()=>st[cur.id]||(st[cur.id]={c:{},f:{},n:'',seen:{}});
+
+function picker(){$('picker').innerHTML=S.map(s=>`<button class="pick" data-id="${s.id}" aria-pressed="${s===cur}"><b>${s.t}</b><span class="d">${s.short} ${s.sit}</span><span class="m">${s.lv} · kb. ${s.min} perc</span><span class="a">${s===cur?'Folyamatban':'Indítás'}<svg viewBox="0 0 46 20" class="arrow"><path d="M0 10h44M35 2l9 8-9 8"/></svg></span></button>`).join('')}
+const chk=(key,items,box)=>`<ul class="chk">${items.map((it,i)=>{const txt=Array.isArray(it)?it[0]:it,tools=Array.isArray(it)?it[1]:'';const k=key+i;return `<li><input type="checkbox" id="${box}-${k}" data-box="${box}" data-k="${k}" ${ss()[box][k]?'checked':''}><label for="${box}-${k}">${txt}${tools?'<br>'+tools:''}</label></li>`}).join('')}</ul>`;
+
+function body(){
+const s=cur;
+switch(step){
+case 0:return `<h3>Helyzet</h3><p>${s.sit}</p><h3>Tanulási cél</h3><p>${s.goal}</p>`;
+case 1:return `<h3>Jogi és etikai keret</h3><p>${s.frame}</p><div class="why"><b>Miért fontos?</b> A nyílt forrású adat sem szabadon felhasználható: a GDPR a nyilvánosan elérhető személyes adatokra is vonatkozik. Gyakorolni csak saját vagy engedélyezett adaton szabad.</div>`;
+case 2:return `<h3>Tervezés</h3>${chk('p',s.plan,'c')}<div class="why"><b>Miért?</b> ${s.plan_why}</div>`;
+case 3:return `<h3>Gyűjtés</h3><p class="small">Pipáld ki, amit elvégeztél. A linkek új lapon nyílnak meg.</p>${chk('g',s.col,'c')}<div class="why"><b>Mit árul el ez?</b> ${s.col_why}</div>`;
+case 4:return `<h3>Elemzés</h3><p>Jelöld be, mi derült ki rólad. A kitettségi mérő ezek alapján számol.</p>${chk('a',s.find,'f')}`;
+case 5:return `<h3>Jelentés</h3><p>${s.rep}</p><label for="notes" class="small">Saját jegyzeteid (csak ebben a böngészőben tárolódnak)</label><textarea id="notes">${(ss().n||'').replace(/</g,'&lt;')}</textarea><div class="nav"><button class="b" id="copy">Összefoglaló másolása</button><span class="small" id="copied"></span></div>`;
+case 6:return `<h3>Mit árul el rólad, és hogyan védekezz</h3>${chk('d',s.def,'c')}<h3 style="margin-top:16px">Kapcsolódó PET-ek</h3><p>${PET.filter(x=>x.f.includes(s.id)).map(x=>T(x.n,x.u)).join('')}</p><div class="nav"><button class="b" id="topet">Teljes PET-gyűjtemény ehhez a forgatókönyvhöz</button><button class="b" id="tomob">Telefonbeállítások</button></div>`;
+case 7:return `<h3>Ellenőrző kérdések</h3>${s.q.map((x,i)=>`<div class="q"><b>${i+1}.</b> ${x}</div>`).join('')}<div class="why"><b>Következő lépés:</b> a fenti nyíllal továbbléphetsz a következő forgatókönyvre, vagy beszéld meg a válaszaidat a csoporttal.</div><details class="tn"><summary>Oktatói megjegyzés</summary><p><b>Időbeosztás:</b> ${TN[s.id].t}</p><p><b>Értékelési szempontok:</b> ${TN[s.id].e}</p><p><b>Vitakérdés:</b> ${TN[s.id].d}</p><p><b>Biztonsági megjegyzés:</b> ${TN[s.id].s}</p></details>`;
+}}
+
+function meter(){
+const f=ss().f,n=cur.find.length,on=cur.find.filter((_,i)=>f['a'+i]);
+const p=Math.round(on.length/n*100);
+$('pct').textContent=p+'%';$('fill').style.width=p+'%';
+$('lvl').textContent=!on.length?'Még nincs bejelölt találat':p<34?'Alacsony kitettség':p<67?'Közepes kitettség':'Magas kitettség';
+$('found').innerHTML=on.map(x=>`<li>${x}</li>`).join('');
+}
+
+function render(){
+const s=cur;ss().seen[step]=1;save();
+$('stitle').textContent=s.t;$('smeta').textContent=`${s.lv} · kb. ${s.min} perc`;
+const pad=n=>String(n).padStart(2,'0'),N=PHASES.length;
+$('bign').textContent=pad(step+1);$('ghost').textContent=[step+2,step+3].filter(n=>n<=N).map(pad).join(' ');
+const pr=N>1?step/(N-1)*100:0;$('prog').style.width=pr+'%';$('knob').style.left=pr+'%';
+$('cnt').textContent=`${step+1} / ${N}`;$('pname').textContent=step===N-1?'Tovább: '+S[(S.indexOf(s)+1)%S.length].t:'Következik: '+PHASES[step+1];
+$('steps').innerHTML=PHASES.map((p,i)=>`<li><button data-s="${i}" ${i===step?'aria-current="step"':''} class="${ss().seen[i]&&i!==step?'done':''}">${p}</button></li>`).join('');
+$('card').innerHTML=body();const cp=$('steps').querySelector('[aria-current]');if(cp){const r=$('steps');r.scrollLeft=Math.max(0,cp.parentElement.offsetLeft-r.clientWidth/2+cp.offsetWidth/2)}
+$('prev').disabled=step===0;$('next').setAttribute('aria-label',step===PHASES.length-1?'Következő forgatókönyv':'Következő lépés');$('next').title=$('next').getAttribute('aria-label');$('prev').title='Előző lépés';
+picker();meter();
+}
+
+function go(id){cur=S.find(s=>s.id===id)||S[0];step=0;render()}
+$('picker').addEventListener('click',e=>{const b=e.target.closest('.pick');if(b){window._picked=1;if(location.hash!=='#'+b.dataset.id)location.hash=b.dataset.id;else{go(b.dataset.id);$('stitle').scrollIntoView({block:'center'})}}});
+$('steps').addEventListener('click',e=>{const b=e.target.closest('button');if(b){step=+b.dataset.s;render()}});
+$('prev').onclick=()=>{if(step>0){step--;render()}};
+$('next').onclick=()=>{if(step===PHASES.length-1){const i=S.indexOf(cur);location.hash=S[(i+1)%S.length].id;window._picked=1;return}step++;render();};
+$('card').addEventListener('change',e=>{const t=e.target;if(t.dataset.box){ss()[t.dataset.box][t.dataset.k]=t.checked;save();meter()}});
+$('card').addEventListener('input',e=>{if(e.target.id==='notes'){ss().n=e.target.value;save()}});
+$('card').addEventListener('click',e=>{if(e.target.id!=='copy')return;
+const f=ss().f,on=cur.find.filter((_,i)=>f['a'+i]);
+const txt=`${cur.t}\nKitettség: ${$('pct').textContent} (${$('lvl').textContent})\nTalálatok:\n${on.map(x=>'- '+x).join('\n')||'- nincs'}\nJegyzetek:\n${ss().n||''}`;
+const done=m=>$('copied').textContent=m;
+try{navigator.clipboard.writeText(txt).then(()=>done('Vágólapra másolva.'),()=>done('A másolás nem sikerült, jelöld ki a szöveget kézzel.'))}catch(err){done('A másolás nem sikerült.')}});
+$('reset').onclick=()=>{$('rconf').hidden=false;$('reset').hidden=true;$('rno').focus()};
+$('rno').onclick=()=>{$('rconf').hidden=true;$('reset').hidden=false;$('reset').focus()};
+$('ryes').onclick=()=>{st={};save();try{localStorage.removeItem('osint-st')}catch(e){};$('rconf').hidden=true;$('reset').hidden=false;step=0;render();mob();$('reset').focus()};
+let os='ios';try{os=localStorage.getItem('osint-os')||(/Android/i.test(navigator.userAgent)?'android':'ios')}catch(e){}
+const mst=()=>st._mob||(st._mob={});
+function mob(){
+const d=MOB[os],m=mst();
+for(const b of $('os').querySelectorAll('button'))b.setAttribute('aria-pressed',b.dataset.os===os);
+$('mlist').innerHTML=d.items.map((x,i)=>{const k=os+i;return `<li><input type="checkbox" id="m-${k}" data-mk="${k}" ${m[k]?'checked':''}><label for="m-${k}"><b>${x.t}</b><span class="lv">${x.l}</span><span class="path">${x.p}</span><span class="w">${x.w}</span></label></li>`}).join('');
+$('mnote').textContent=d.note;mcount();
+}
+function mcount(){const d=MOB[os],m=mst();const n=d.items.filter((_,i)=>m[os+i]).length;$('mdone').textContent=String(n).padStart(2,'0');$('mof').textContent=`/ ${d.items.length} beállítás kész (${os==='ios'?'iOS':'Android'})`}
+$('os').addEventListener('click',e=>{const b=e.target.closest('button');if(b){os=b.dataset.os;try{localStorage.setItem('osint-os',os)}catch(err){};mob()}});
+$('mlist').addEventListener('change',e=>{const t=e.target;if(t.dataset.mk){mst()[t.dataset.mk]=t.checked;save();mcount()}});
+mob();
+let pf='all';
+function pets(){
+$('filt').innerHTML=[['all','Mind'],...S.map(x=>[x.id,x.t])].map(([k,l])=>`<button data-f="${k}" aria-pressed="${pf===k}">${l}</button>`).join('');
+$('pets').innerHTML=PET.filter(x=>pf==='all'||x.f.includes(pf)).map(x=>`<article class="pet"><div class="cat">${x.c}</div><h3>${x.n}</h3><p>${x.w}</p><p class="small">Példák: ${x.ex}</p><div class="gp"><b>Jó gyakorlat:</b> ${x.g}</div><div class="tags">${x.f.map(f=>`<span>${S.find(z=>z.id===f).t}</span>`).join('')}</div><a class="more" href="${x.u}">Tovább a forráshoz<svg viewBox="0 0 46 20" class="arrow"><path d="M0 10h44M35 2l9 8-9 8"/></svg></a></article>`).join('');
+}
+$('filt').addEventListener('click',e=>{const b=e.target.closest('button');if(b){pf=b.dataset.f;pets()}});
+$('card').addEventListener('click',e=>{if(e.target.id==='tomob'){$('mobil').scrollIntoView({behavior:'smooth'})}if(e.target.id==='topet'){pf=cur.id;pets();$('pet').scrollIntoView({behavior:'smooth'})}});
+pets();
+const fromHash=()=>{const h=location.hash.slice(1);if(S.some(x=>x.id===h)){go(h);if(window._picked){$('stitle').scrollIntoView({block:'center'});window._picked=0}return}if(!$('stitle').textContent)go('f1');const t=h&&document.getElementById(h);if(t)t.scrollIntoView()};
+window.addEventListener('hashchange',fromHash);fromHash();
+}
+</script>
+</body>
+</html>
