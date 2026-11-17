@@ -3,7 +3,6 @@
 Böngészőben futó, telepítés nélküli oktatási alkalmazás kiberbiztonsági mesterszakos hallgatóknak. Célja, hogy a hallgatók a **saját** nyilvános adataikon keresztül lássák meg, mit tud róluk egy idegen, és ebből tanulják meg a védekezést.
 
 **Élő oldal:** https://akosorb.github.io/OSint/
-**„Server” design változat:** https://akosorb.github.io/OSint/server.html
 
 ## Tartalom
 
@@ -20,8 +19,8 @@ A haladás és a jegyzetek csak a hallgató saját böngészőjében tárolódna
 
 | Fájl | Leírás |
 |---|---|
-| `index.html` | Az alkalmazás (krém-korall design) |
-| `server.html` | Ugyanaz az alkalmazás „Server” designnal, animált elemekkel |
+| `index.html` | Az alkalmazás („Server” design, animált elemekkel) |
+| `server.html` | Átirányítás a főoldalra (régi link) |
 | `docs/oktatoi-segedlet.pdf` | Oktatói segédlet nyomtatható formában |
 | `docs/forgatokonyv-katalogus.md` | A forgatókönyvek szöveges katalógusa |
 | `docs/eszkoz-valogatas.md` | Az eszközök válogatása (OSINT4ALL, OSINT Framework) és a kihagyások indoklása |
